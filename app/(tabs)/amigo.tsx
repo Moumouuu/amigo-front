@@ -1,10 +1,10 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function Scan() {
+export default function Amigo() {
   return (
     <View>
-      <Text>Scan</Text>
+      <Text>index</Text>
     </View>
   );
 }
