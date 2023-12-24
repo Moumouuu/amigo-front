@@ -9,7 +9,13 @@ export default function TabLayout() {
   const userId = 1;
 
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarLabelStyle: {
+          fontFamily: "mon-sb",
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
