@@ -21,15 +21,22 @@ export default function Home() {
         />
         <Text style={style.header}>Amigo</Text>
         <Text style={style.label}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolores
-          numquam aperiam
+          Un clic, tous vos réseaux. Simplifiez votre connexion, partagez
+          instantanément !
         </Text>
         <View style={{ paddingVertical: 30 }}></View>
         <TouchableOpacity
           onPress={() => router.push("/(login)/login")}
           style={style.loginBtn}
         >
-          <Text style={{ color: "white", textAlign: "center" }}>
+          <Text
+            style={{
+              color: "white",
+              textAlign: "center",
+              fontSize: 15,
+              fontFamily: "mon-sb",
+            }}
+          >
             Se connecter
           </Text>
         </TouchableOpacity>
@@ -37,7 +44,14 @@ export default function Home() {
           onPress={() => router.push("/(login)/register")}
           style={style.registerBtn}
         >
-          <Text style={{ color: "black", textAlign: "center" }}>
+          <Text
+            style={{
+              color: "black",
+              textAlign: "center",
+              fontSize: 15,
+              fontFamily: "mon-sb",
+            }}
+          >
             Créer un compte
           </Text>
         </TouchableOpacity>
@@ -61,6 +75,7 @@ const style = StyleSheet.create({
     fontFamily: "mon",
     color: "grey",
     width: "80%",
+    textAlign: "center",
     marginTop: 10,
   },
   loginBtn: {
