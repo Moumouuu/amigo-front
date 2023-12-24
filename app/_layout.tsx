@@ -45,7 +45,7 @@ function RootLayoutNav() {
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
-        name="(modals)/AmigoModal"
+        name="(modals)/amigoModal"
         options={{
           title: "Amigo Me",
           presentation: "modal",

@@ -1,10 +1,8 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { Image } from "react-native";
 
 export default function TabLayout() {
-  const router = useRouter();
-
   //todo get user id
   const userId = 1;
 
@@ -17,7 +15,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="scan"
         options={{
           title: "Scan",
           tabBarIcon: ({ color, size }) => (
@@ -29,7 +27,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="amigo"
         options={{
-          href: "/(modals)/AmigoModal",
+          href: "/(modals)/amigoModal",
           tabBarLabel: () => null,
           tabBarIcon: ({ size }) => (
             <Image
