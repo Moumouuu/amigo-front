@@ -1,43 +1,69 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Image,
+  InputModeOptions,
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import FormError from "../../components/formError";
+import Input from "../../components/input";
 import Colors from "../../constants/Colors";
 import { BACK_URL, save } from "../../constants/utils";
 
-export default function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+const loginInputs = [
+  {
+    name: "email",
+    inputMode: "text" as InputModeOptions,
+    icon: "envelope" as "envelope",
+    placeholder: "Email",
+  },
+  {
+    name: "password",
+    inputMode: "text" as InputModeOptions,
+    icon: "lock" as "lock",
+    placeholder: "Mot de passe",
+  },
+];
 
+export default function Login() {
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
   const router = useRouter();
 
-  const handleSubmit = async () => {
-    // todo: store token after login
-    // todo show errors
+  const onError = (errors: any, e: any) => {
+    return console.log(errors);
+  };
+
+  const onSubmit = async (data: any) => {
     setLoading(true);
     try {
       const res = await axios.post(`${BACK_URL}/api/login`, {
-        email,
-        password,
+        ...data,
       });
+
       if (res.status === 200) {
         save("authToken", res.data.token);
         router.push("/scan");
       }
-      setError(res.data.error);
     } catch (e: any) {
-      console.log(`Error while login : ${e}`);
+      if (e?.response?.data?.error) {
+        setError(e?.response?.data?.error);
+        console.log(`Custom Error Message: ${e?.response?.data?.error}`);
+      } else {
+        console.log(`Error while login : ${e}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,49 +98,20 @@ export default function Login() {
             width: "75%",
           }}
         >
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <Ionicons size={30} name="mail" />
-            <TextInput
-              inputMode="email"
-              keyboardType="email-address"
-              autoComplete="email"
-              placeholder="Email"
-              onChangeText={setEmail}
-              style={style.input}
+          {loginInputs.map((input) => (
+            <Input
+              key={input.name}
+              input={input}
+              control={control}
+              errors={errors}
             />
-          </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <FontAwesome size={30} name={"lock"} />
-            <TextInput
-              onChangeText={setPassword}
-              autoComplete="password"
-              placeholder="Mot de passe"
-              secureTextEntry={true}
-              style={style.input}
-            />
-          </View>
-          {error && (
-            <Text style={{ color: "red", fontFamily: "mon-b" }}>{error}</Text>
-          )}
+          ))}
+
+          <FormError error={error} />
+
           <TouchableOpacity
             disabled={loading}
-            onPress={handleSubmit}
+            onPress={handleSubmit(onSubmit, onError)}
             style={[
               style.loginBtn,
               {

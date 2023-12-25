@@ -2,50 +2,100 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Image,
+  InputModeOptions,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import FormError from "../../components/formError";
+import Input from "../../components/input";
+import { inputStyle } from "../../components/styles/input.style";
 import Colors from "../../constants/Colors";
 import { BACK_URL, save } from "../../constants/utils";
-import { User } from "../../types/type";
+
+const registerInputs = [
+  {
+    name: "email",
+    inputMode: "text" as InputModeOptions,
+    icon: "envelope" as "envelope",
+    placeholder: "Email",
+  },
+  {
+    name: "password",
+    inputMode: "text" as InputModeOptions,
+    icon: "lock" as "lock",
+    placeholder: "Mot de passe",
+  },
+  {
+    name: "firstName",
+    inputMode: "text" as InputModeOptions,
+    icon: "user" as "user",
+    placeholder: "Prénom",
+  },
+  {
+    name: "lastName",
+    inputMode: "text" as InputModeOptions,
+    icon: "id-card" as "id-card",
+    placeholder: "Nom",
+  },
+  {
+    name: "details",
+    inputMode: "text" as InputModeOptions,
+    icon: "quote-left" as "quote-left",
+    placeholder: "Description du compte",
+  },
+];
 
 export default function Register() {
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+
   const [isDatePickerVisible, setDatePickerVisibility] =
     useState<boolean>(false);
-
-  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
 
   const router = useRouter();
 
-  const handleSubmit = async () => {
-    // todo: store token after login
-    // todo show errors
+  const onError = (errors: any, e: any) => {
+    return console.log(errors);
+  };
+
+  const onSubmit = async (data: any) => {
     setLoading(true);
     try {
       const res = await axios.post(`${BACK_URL}/api/register`, {
-        ...user,
+        ...data,
+        dateOfBirth: dateOfBirth?.toISOString(),
       });
+
       if (res.status === 200) {
         save("authToken", res.data.token);
         router.push("/scan");
       }
-      setError(res.data.error);
     } catch (e: any) {
-      console.log(`Error while register : ${e}`);
+      if (e?.response?.data?.error) {
+        setError(e?.response?.data?.error);
+        console.log(`Custom Error Message: ${e?.response?.data?.error}`);
+      } else {
+        console.log(`Error while register : ${e}`);
+      }
     } finally {
       setLoading(false);
     }
   };
+
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -55,8 +105,7 @@ export default function Register() {
   };
 
   const handleConfirm = (date: any) => {
-    const newUser: any = { ...user, dateOfBirth: date };
-    setUser(newUser);
+    setDateOfBirth(date);
     hideDatePicker();
   };
 
@@ -89,145 +138,28 @@ export default function Register() {
             width: "75%",
           }}
         >
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <FontAwesome size={30} name="user" />
-            <TextInput
-              inputMode="text"
-              autoComplete="name"
-              placeholder="Prénom"
-              style={style.input}
-              onChangeText={(text) => {
-                const newUser: any = { ...user, firstName: text };
-                setUser(newUser);
-              }}
+          {registerInputs.map((input) => (
+            <Input
+              key={input.name}
+              input={input}
+              control={control}
+              errors={errors}
             />
-          </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <FontAwesome size={30} name="id-card" />
-            <TextInput
-              inputMode="text"
-              autoComplete="name-family"
-              placeholder="Nom"
-              style={style.input}
-              onChangeText={(text) => {
-                const newUser: any = { ...user, lastName: text };
-                setUser(newUser);
-              }}
-            />
-          </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <FontAwesome size={30} name="birthday-cake" />
-            <TouchableOpacity onPress={showDatePicker} style={style.input}>
-              <Text
-                style={{
-                  fontFamily: "mon-sb",
-                  color: "black",
-                  opacity: 0.25,
-                  fontSize: 15,
-                }}
-              >
-                {user?.dateOfBirth?.toLocaleDateString() ?? "Date de naissance"}
-              </Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode="date"
-              date={user?.dateOfBirth ?? new Date()}
-              onConfirm={handleConfirm}
-              onCancel={hideDatePicker}
-            />
-          </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <Ionicons size={30} name="mail" />
-            <TextInput
-              inputMode="email"
-              keyboardType="email-address"
-              autoComplete="email"
-              placeholder="Email"
-              style={style.input}
-              onChangeText={(text) => {
-                const newUser: any = { ...user, email: text };
-                setUser(newUser);
-              }}
-            />
-          </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <FontAwesome size={30} name={"lock"} />
-            <TextInput
-              autoComplete="password"
-              placeholder="Mot de passe"
-              secureTextEntry={true}
-              style={style.input}
-              onChangeText={(text) => {
-                const newUser: any = { ...user, password: text };
-                setUser(newUser);
-              }}
-            />
-          </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <FontAwesome size={30} name="quote-left" />
-            <TextInput
-              inputMode="text"
-              placeholder="Description de votre compte"
-              style={style.input}
-              onChangeText={(text) => {
-                const newUser: any = { ...user, details: text };
-                setUser(newUser);
-              }}
-            />
-          </View>
+          ))}
+
+          <InputCalendar
+            showDatePicker={showDatePicker}
+            isDatePickerVisible={isDatePickerVisible}
+            hideDatePicker={hideDatePicker}
+            handleConfirm={handleConfirm}
+            dateOfBirth={dateOfBirth}
+          />
+
+          <FormError error={error} />
 
           <TouchableOpacity
             disabled={loading}
-            onPress={handleSubmit}
+            onPress={handleSubmit(onSubmit, onError)}
             style={[
               style.loginBtn,
               {
@@ -246,6 +178,7 @@ export default function Register() {
               Créer un compte
             </Text>
           </TouchableOpacity>
+
           <Text>
             Vous avez déjà un compte ?{" "}
             <Text
@@ -271,16 +204,7 @@ const style = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  input: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginVertical: 10,
-    backgroundColor: Colors.gray,
-    fontFamily: "mon-sb",
-    fontSize: 15,
-    width: "80%",
-  },
+
   loginBtn: {
     width: 300,
     paddingVertical: 20,
@@ -289,3 +213,50 @@ const style = StyleSheet.create({
     marginVertical: 20,
   },
 });
+
+const InputCalendar = ({
+  showDatePicker,
+  isDatePickerVisible,
+  hideDatePicker,
+  handleConfirm,
+  dateOfBirth,
+}: {
+  showDatePicker: () => void;
+  isDatePickerVisible: boolean;
+  hideDatePicker: () => void;
+  handleConfirm: (date: any) => void;
+  dateOfBirth: Date | null;
+}) => {
+  return (
+    <View
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        justifyContent: "space-around",
+      }}
+    >
+      <FontAwesome size={30} name="birthday-cake" />
+      <TouchableOpacity onPress={showDatePicker} style={inputStyle.input}>
+        <Text
+          style={{
+            fontFamily: "mon-sb",
+            color: "black",
+            opacity: 0.25,
+            fontSize: 15,
+          }}
+        >
+          {dateOfBirth?.toLocaleDateString() ?? "Date de naissance (optionnel)"}
+        </Text>
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        date={dateOfBirth ?? new Date()}
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+      />
+    </View>
+  );
+};
